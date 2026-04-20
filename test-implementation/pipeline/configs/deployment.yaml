@@ -1,0 +1,29 @@
+# deployment.yaml — Python → Arduino serial bridge.
+
+serial:
+  # Override with the actual /dev/tty.usbmodem* at runtime. macOS default form.
+  port: /dev/tty.usbmodem101
+  baud: 115200
+  # Seconds to wait after opening port before first write; Arduino resets on
+  # DTR-open and needs ~2 s to boot the sketch.
+  open_delay_s: 2.0
+  write_timeout_s: 0.2
+
+protocol:
+  # Fixed binary frame — matches protocol.py and grasp_controller.ino.
+  #   [SYNC0=0xAA][SYNC1=0x55][CMD:u8][ARG:u8][CRC8]   # 5 bytes
+  sync_bytes: [0xAA, 0x55]
+  frame_len: 5
+  commands:
+    GRASP: 0x01
+    REST: 0x02
+    PING: 0x03
+    CALIBRATE: 0x04
+
+inference:
+  # Probability threshold for committing a command. Above → GRASP, below (1 - t)
+  # → REST, else hold previous. Keeps the arm from chattering on borderline
+  # predictions.
+  decision_threshold: 0.75
+  # Minimum dwell time before a command flip is allowed (hysteresis).
+  min_dwell_s: 1.0

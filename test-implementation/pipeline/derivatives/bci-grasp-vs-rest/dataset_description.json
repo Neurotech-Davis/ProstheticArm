@@ -1,0 +1,19 @@
+{
+    "Name": "BCI Grasp-vs-Rest — preprocessed epochs",
+    "BIDSVersion": "1.8.0",
+    "DatasetType": "derivative",
+    "GeneratedBy": [
+        {
+            "Name": "bci_grasp",
+            "Version": "0.1.0",
+            "Description": "Task-band filter (8-30 Hz) and cue-locked epoching (0.5-2.5 s post-cue) applied to ds003810 MI runs (runs 1-4). Restricted to the 6-channel deployment subset: C3, Cz, C4, F3, P3, Pz.",
+            "CodeURL": "test-implementation/pipeline/"
+        }
+    ],
+    "SourceDatasets": [
+        {
+            "DOI": "doi:10.18112/openneuro.ds003810.v2.0.2",
+            "URL": "test-implementation/ds003810"
+        }
+    ]
+}

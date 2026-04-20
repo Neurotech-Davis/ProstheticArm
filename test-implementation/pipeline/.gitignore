@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Editors
+.vscode/
+.idea/
+.DS_Store
+
+# Build artifacts
+build/
+dist/
+
+# Model / output artifacts — keep folders, not contents
+models/*.joblib
+models/*.pkl
+models/*.pt
+reports/figures/*
+reports/metrics/*
+!reports/figures/.gitkeep
+!reports/metrics/.gitkeep
+
+# Processed EEG (derivatives) — regenerate from raw; don't commit
+derivatives/bci-grasp-vs-rest/sub-*/

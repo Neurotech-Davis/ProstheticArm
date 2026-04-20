@@ -1,0 +1,44 @@
+# model.yaml — classifier choice and evaluation.
+
+model:
+  # First-pass model per project plan: CSP → log-variance → LDA.
+  # LDA is strong for BCI because CSP features are near-Gaussian and LDA
+  # has no hyperparameters to overfit on small subject counts.
+  name: lda
+  # sklearn LinearDiscriminantAnalysis kwargs. "lsqr" + Ledoit-Wolf shrinkage
+  # is the standard recipe for EEG with limited trials.
+  params:
+    solver: lsqr
+    shrinkage: auto
+
+# Alternatives for later comparison (not used on first pass):
+# model:
+#   name: svm
+#   params: { kernel: linear, C: 1.0 }
+# model:
+#   name: eegnet            # deep model; only add if LDA underperforms
+#   params: { epochs: 100, lr: 1e-3 }
+
+evaluation:
+  # Primary: Leave-One-Subject-Out with 10 subjects → 10 folds.
+  # Tests generalization across individuals, which is the real-world ask.
+  primary: loso
+
+  # Secondary: stratified k-fold pooled across subjects. Much easier problem
+  # (same subject in train and test), so treat as an upper bound.
+  secondary: kfold
+  kfold:
+    n_splits: 5
+    shuffle: true
+    random_state: 42
+
+  metrics:
+    - accuracy
+    - roc_auc
+    - confusion_matrix
+
+# Artifact naming.
+# Models save as models/{run_id}.joblib with a sidecar .json containing
+# config snapshot, metrics, and git SHA for reproducibility.
+artifact:
+  run_id_format: "{date:%Y%m%d_%H%M%S}_{model}_{eval}"

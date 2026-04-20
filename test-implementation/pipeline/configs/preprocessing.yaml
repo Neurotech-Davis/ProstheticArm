@@ -1,0 +1,42 @@
+# preprocessing.yaml — filtering and epoching choices.
+#
+# Hardware already applied an online 0.5–45 Hz Butterworth filter; this
+# config specifies the *task-band* filter on top of that.
+
+bandpass:
+  # 8–30 Hz captures mu (8–13) and beta (13–30), the two rhythms that show
+  # event-related desynchronization (ERD) during motor imagery. The plan
+  # allows widening to 7–35 Hz for comparison.
+  l_freq: 8.0
+  h_freq: 30.0
+  method: iir         # mne.filter supports "iir" (Butterworth) and "fir"
+  iir_params:
+    order: 4
+    ftype: butter
+
+notch:
+  # Dataset was recorded in Argentina → 50 Hz powerline. Even with a 30 Hz
+  # upper bandpass we keep the option as a no-op for code paths that run
+  # before the bandpass (e.g., exploratory plots).
+  enabled: false
+  freqs: [50.0]
+
+rereference:
+  # Original reference is left earlobe (A1). Common average re-reference is
+  # a common choice for low-channel BCI but can smear focal ERD; off by default.
+  enabled: false
+  method: average
+
+epoch:
+  # Epoch is cue-locked: t=0 is the task-onset marker (MI or Rest).
+  # The cue/arrow is presented for 4 s; we trim the first 0.5 s to let
+  # transient visual-evoked activity settle, and stop at 2.5 s to keep the
+  # window short for real-time compatibility (low latency on deployment).
+  tmin: 0.5
+  tmax: 2.5
+
+  # Optional baseline window (seconds). Applied by mne.Epochs as a per-epoch
+  # mean subtraction. For CSP we usually leave this off — baseline correction
+  # on band-limited data is near-no-op and can leak label info. Set to null
+  # to disable.
+  baseline: null
