@@ -1,0 +1,17 @@
+{
+    "onset": {
+        "Description": "Event onset",
+        "Units": "second"
+    },
+    "duration": {
+        "Description": "Event duration",
+        "Units": "second"
+    },
+    "value": {
+        "Description": "Value of event (numerical)",
+        "Levels": {
+            "7": "MI (in raw edf file as OVTK_GDF_Right)",
+            "9": "Rest (in raw edf file as OVTK_GDF_Tongue)"
+        }
+    }
+}
