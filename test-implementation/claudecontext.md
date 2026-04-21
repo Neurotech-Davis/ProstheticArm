@@ -94,17 +94,32 @@ High-level stages and defaults. Flexibility noted — revisit each choice with e
 | Classifier | **LDA** (first pass) | SVM / EEGNet later |
 | Evaluation | **LOSO** CV (10 subjects) + k-fold | accuracy + ROC-AUC + confusion matrix |
 | Realtime | **scaffold only** (LSL inlet + sliding predict) | offline is the working focus |
-| Deployment | Python→Arduino over serial, **binary framed protocol** | see below |
+| Deployment | Python→Arduino over serial, **single ASCII byte** (`'0'`=rest, `'1'`=grasp) | see below |
 
-### Arduino serial protocol (fixed now so Python & .ino stay in lockstep)
+### Arduino serial protocol
+
+Single ASCII byte per state change:
 
 ```
-Frame: [0xAA][0x55][CMD:u8][ARG:u8][CRC8]   # 5 bytes
-CMD:   0x01 GRASP   0x02 REST   0x03 PING   0x04 CALIBRATE
-ARG:   reserved (e.g., grasp strength 0–255)
+Python → Arduino:
+    '1' (0x31)   grasp   → servos to SERVO_MAX
+    '0' (0x30)   rest    → servos to SERVO_MIN
+    anything else        → ignored (resilient to startup noise)
 ```
 
-Implementation lives in `pipeline/src/bci_grasp/deployment/protocol.py` (encode/decode + CRC8) and `pipeline/arduino/grasp_controller/grasp_controller.ino` (state machine over PCA9685). Round-trip tests in `pipeline/tests/test_protocol.py`.
+Send on transition, not every classifier tick. Apply hysteresis
+(`configs/deployment.yaml::decision_threshold`, `min_dwell_s`) in Python
+before calling `link.send(...)` — the classifier's raw output will
+chatter without it.
+
+Implementation: `pipeline/src/bci_grasp/deployment/arduino_serial.py`
+(pyserial wrapper) and `pipeline/arduino/grasp_controller/grasp_controller.ino`
+(single-byte reader).
+
+**Legacy framed protocol** (5-byte `[0xAA][0x55][CMD][ARG][CRC8]`) lives in
+`pipeline/src/bci_grasp/deployment/protocol.py` + `pipeline/tests/test_protocol.py`.
+Kept for reference / future use — not wired into the v1 path. Revisit only
+when we add a third command (calibration, speed, telemetry back, etc.).
 
 ### Stimulus GUI (stubs only at first)
 
