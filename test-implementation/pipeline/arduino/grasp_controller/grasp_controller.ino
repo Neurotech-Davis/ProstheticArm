@@ -6,27 +6,25 @@
 //   any other byte is ignored (resilient to startup noise + stray chars in a
 //   serial monitor).
 //
-// Control flow: non-blocking incremental stepping (Option B).
+// Control flow: non-blocking incremental stepping.
 //
-//   Each loop() iteration advances every servo ONE SERVO_STEP toward its
-//   current target (determined by `c`) and delays SERVO_STEP_DELAY_MS. When
-//   a servo reaches its target it simply stops moving — no snap-back, no
-//   retrigger. This eliminates the twitching that comes from restarting a
-//   full sweep on every iteration while `c` holds.
+//   Why step-and-wait rather than commanding the target in one go:
+//     Hobby servos have no speed input — the PWM pulse only encodes a
+//     position, and the servo's built-in controller drives there at its
+//     full physical speed (~0.1 s / 60°). Sending the final target in one
+//     write means a jerky snap, hard on the linkages and drawing a large
+//     current spike. To control the speed we instead feed a sequence of
+//     small intermediate targets, each close enough that the servo reaches
+//     it within SERVO_STEP_DELAY_MS before the next one arrives. Effective
+//     speed = SERVO_STEP / SERVO_STEP_DELAY_MS; at the defaults (10 ticks
+//     per 5 ms) a full MIN↔MAX traversal takes ~225 ms — smooth motion you
+//     can watch, with no mechanical slam.
 //
-//   Why not a blocking for-loop sweep inside loop() (reference_motor_control
-//   style)? Two reasons:
-//     1. The reference runs BOTH sweeps in one loop() iteration with a 1 s
-//        pause between them, so the trajectory is continuous. If you run
-//        only the upward sweep and then re-run it, each iteration snaps the
-//        commanded pulse from MAX back to MIN with no settling time — the
-//        servo can't physically traverse that in 5 ms and ends up twitching.
-//     2. Blocking sweeps deafen serial for ~225 ms at a time; non-blocking
-//        stepping keeps checkSerial() firing every 5 ms, so `c` can
-//        redirect a sweep mid-flight.
-//
-//   Visible motion speed matches the reference: ~225 ms for a full
-//   MIN↔MAX traversal at the default step/delay.
+//   Each loop() iteration advances every servo one SERVO_STEP tick toward
+//   its target (chosen by `c`). Servos that have reached the target no-op
+//   — no retrigger, no snap-back. Because the loop isn't trapped inside a
+//   blocking sweep, checkSerial() fires every 5 ms and `c` can redirect a
+//   motion in flight.
 //
 // Hardware:
 //   PCA9685 16-channel PWM driver @ 50 Hz (standard hobby-servo rate).
