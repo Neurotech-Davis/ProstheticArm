@@ -59,6 +59,26 @@ Outputs:
 For full LOSO, `datalad get sub-XX` each remaining subject and rerun `01_preprocess.py`
 (no `--subject` flag → all).
 
+## Testing the Arduino link
+
+Manually exercise the Python→Arduino serial bridge without the classifier
+using the PsychoPy toggle GUI:
+
+```bash
+conda activate psychopy_env
+cd test-implementation/pipeline
+
+# Without Arduino plugged in (prints what it would send):
+python scripts/test_arduino_gui.py --port MOCK
+
+# With Arduino (upload grasp_controller.ino first, then):
+python scripts/test_arduino_gui.py --port /dev/tty.usbmodem101
+```
+
+Click the big button to toggle REST ↔ GRASP. The on-board LED should follow;
+servos will follow once you uncomment the PCA9685 lines in the `.ino`.
+ESC or the STOP button quits.
+
 ## Status (first pass)
 
 | Module | Status |
@@ -70,9 +90,10 @@ For full LOSO, `datalad get sub-XX` each remaining subject and rerun `01_preproc
 | `models/` (LDA pipeline + save/load) | **implemented** |
 | `evaluation/` (LOSO + k-fold + metrics) | **implemented** |
 | `scripts/01_preprocess.py`, `02_train.py`, `03_evaluate.py` | **implemented** |
-| `deployment/protocol.py` + tests | **implemented** |
-| `deployment/arduino_serial.py` | stub (pyserial wrapper — wire up with hardware) |
-| `arduino/grasp_controller/grasp_controller.ino` | stub state machine (LED blink, servo TODO) |
+| `deployment/arduino_serial.py` (single-byte ASCII link) | **implemented** |
+| `arduino/grasp_controller/grasp_controller.ino` | **implemented** (LED blinks on commands; PCA9685 servo lines ready to uncomment) |
+| `scripts/test_arduino_gui.py` (toggle GUI) | **implemented** |
+| `deployment/protocol.py` + tests (framed protocol — reference only) | **implemented, unused** |
 | `realtime/` (LSL inlet + sliding inference) | stub (wire up after LOSO validation) |
 | `task/` (PsychoPy stimulus GUI) | stub (for future own-data collection) |
 
