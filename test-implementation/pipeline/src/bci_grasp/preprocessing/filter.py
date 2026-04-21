@@ -7,51 +7,62 @@ Why this band: motor imagery produces event-related desynchronization (ERD)
 — a power decrease — primarily in mu (8–13 Hz) over contralateral sensorimotor
 cortex, and secondarily in beta (13–30 Hz). A narrower band around mu only
 (8–13) can work but usually hurts single-trial classification.
+
+Why IIR (Butterworth) over FIR for BCI:
+  - Lower latency: zero-phase FIR with the passband widths we need would
+    require a very long kernel, which forces a long group delay and rules
+    out tight real-time windows.
+  - Flatter passband than a default MNE FIR for the same stop-band suppression.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import mne
+import mne
 
 
 def apply_bandpass(
-    raw: "mne.io.Raw",
+    raw: mne.io.BaseRaw,
     l_freq: float = 8.0,
     h_freq: float = 30.0,
     method: str = "iir",
     iir_params: dict | None = None,
-) -> "mne.io.Raw":
-    """In-place IIR bandpass filter (Butterworth by default).
+) -> mne.io.BaseRaw:
+    """In-place bandpass filter (Butterworth IIR by default).
 
     Parameters
     ----------
-    raw : mne.io.Raw
-        Preloaded Raw (``raw.load_data()`` must have been called).
+    raw : mne.io.BaseRaw
+        Preloaded Raw (``raw.load_data()`` must have been called — loader does this).
     l_freq, h_freq : float
         Band edges in Hz.
     method : {"iir", "fir"}
-        "iir" is preferred for BCI — lower latency, flatter passband.
+        "iir" preferred (see module docstring).
     iir_params : dict or None
-        Passed through to ``mne.filter.create_filter`` / ``raw.filter``.
-        Example: ``{"order": 4, "ftype": "butter"}``.
+        Passed through to MNE. Example: ``{"order": 4, "ftype": "butter"}``.
+        None → MNE defaults to a 4th-order Butterworth.
 
     Returns
     -------
-    mne.io.Raw
-        The same object, filtered in-place. Return is a convenience for chaining.
+    mne.io.BaseRaw
+        The same object, filtered in-place. Returned for chaining.
     """
-    raise NotImplementedError(
-        "Implement: raw.filter(l_freq, h_freq, method=method, iir_params=iir_params)."
+    if iir_params is None:
+        iir_params = {"order": 4, "ftype": "butter"}
+    raw.filter(
+        l_freq=l_freq,
+        h_freq=h_freq,
+        method=method,
+        iir_params=iir_params if method == "iir" else None,
+        verbose="ERROR",
     )
+    return raw
 
 
-def apply_notch(raw: "mne.io.Raw", freqs: list[float]) -> "mne.io.Raw":
+def apply_notch(raw: mne.io.BaseRaw, freqs: list[float]) -> mne.io.BaseRaw:
     """Notch-filter powerline (50 Hz for ds003810).
 
-    Usually unnecessary when the task bandpass is 8–30 Hz (50 Hz is already
-    attenuated), but kept for exploratory plots of unfiltered data.
+    Usually unnecessary once the task bandpass is 8–30 Hz (50 Hz is already
+    well attenuated), but kept for exploratory plots of unfiltered data.
     """
-    raise NotImplementedError("Implement: raw.notch_filter(freqs=freqs).")
+    raw.notch_filter(freqs=freqs, verbose="ERROR")
+    return raw

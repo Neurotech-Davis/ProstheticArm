@@ -5,29 +5,27 @@ maximal for one class and minimal for the other — exactly the decomposition
 you want for ERD-based motor-imagery classification, because ERD manifests
 as a variance (band-power) difference between MI and Rest.
 
-For a classic binary CSP+LDA pipeline:
+Classic binary CSP+LDA pipeline:
 
     1. Bandpass filter (done in preprocessing).
     2. Epoch around the cue (done in preprocessing).
-    3. Fit CSP on training epochs → get W (n_components x n_channels).
+    3. Fit CSP on training epochs → spatial filter matrix W.
     4. Apply W → log-variance of each component → n_components features/trial.
     5. LDA on those features.
 
 We reuse ``mne.decoding.CSP`` rather than reimplementing the generalized
-eigenvalue problem. The wrapper below just pins the defaults we care about
-and exposes the same sklearn Transformer interface, so it drops straight
-into ``sklearn.pipeline.Pipeline``.
+eigenvalue problem. The factory below just pins the defaults we care about
+and returns an object that drops straight into ``sklearn.pipeline.Pipeline``.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from mne.decoding import CSP
+from mne.decoding import CSP
 
 
-def build_csp(n_components: int = 4, reg: str | None = None, log: bool = True) -> "CSP":
+def build_csp(
+    n_components: int = 4, reg: str | None = None, log: bool = True
+) -> CSP:
     """Construct a configured ``mne.decoding.CSP`` transformer.
 
     Parameters
@@ -38,7 +36,7 @@ def build_csp(n_components: int = 4, reg: str | None = None, log: bool = True) -
         shows overfitting.
     reg : {None, "ledoit_wolf", "oas"} or float
         Covariance regularization. ``None`` is fine when trial count per
-        subject is high; Ledoit-Wolf helps with few trials / LOSO.
+        subject is high; "ledoit_wolf" helps with few trials / LOSO.
     log : bool
         If True, returns log-variance of filtered signal as features
         (standard). If False, returns z-scored variance — sometimes slightly
@@ -50,7 +48,9 @@ def build_csp(n_components: int = 4, reg: str | None = None, log: bool = True) -
         Ready to ``fit`` on ``(n_epochs, n_channels, n_times)`` data with
         integer labels in ``y``.
     """
-    raise NotImplementedError(
-        "Implement: from mne.decoding import CSP; "
-        "return CSP(n_components=n_components, reg=reg, log=log, cov_est='concat')."
+    return CSP(
+        n_components=n_components,
+        reg=reg,
+        log=log,
+        cov_est="concat",
     )

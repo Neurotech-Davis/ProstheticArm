@@ -14,10 +14,10 @@ The whole thing is an ``sklearn.pipeline.Pipeline`` so it composes with
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.pipeline import Pipeline
 
-if TYPE_CHECKING:
-    from sklearn.pipeline import Pipeline
+from bci_grasp.features.csp import build_csp
 
 
 def build_lda_pipeline(
@@ -25,7 +25,7 @@ def build_lda_pipeline(
     csp_reg: str | None = None,
     lda_solver: str = "lsqr",
     lda_shrinkage: str | float | None = "auto",
-) -> "Pipeline":
+) -> Pipeline:
     """Construct the CSP → LDA sklearn Pipeline.
 
     Parameters
@@ -36,7 +36,8 @@ def build_lda_pipeline(
     lda_solver : {"lsqr", "eigen", "svd"}
         "lsqr" + shrinkage is the standard BCI recipe.
     lda_shrinkage : "auto", float, or None
-        "auto" uses Ledoit-Wolf. Only valid with lsqr/eigen solvers.
+        "auto" uses Ledoit-Wolf. Only valid with lsqr/eigen solvers; ignored
+        (must be None) for "svd".
 
     Returns
     -------
@@ -44,9 +45,14 @@ def build_lda_pipeline(
         Named steps: ``"csp"``, ``"lda"``. Fit with ``(X, y)`` where X has
         shape ``(n_epochs, n_channels, n_times)`` and y is ``{0, 1}``.
     """
-    raise NotImplementedError(
-        "Implement: from mne.decoding import CSP; "
-        "from sklearn.discriminant_analysis import LinearDiscriminantAnalysis; "
-        "from sklearn.pipeline import Pipeline; "
-        "return Pipeline([('csp', CSP(...)), ('lda', LDA(solver=..., shrinkage=...))])."
+    lda_kwargs: dict = {"solver": lda_solver}
+    if lda_solver in ("lsqr", "eigen"):
+        lda_kwargs["shrinkage"] = lda_shrinkage
+    # "svd" solver doesn't accept shrinkage at all — leave it out.
+
+    return Pipeline(
+        [
+            ("csp", build_csp(n_components=csp_n_components, reg=csp_reg, log=True)),
+            ("lda", LinearDiscriminantAnalysis(**lda_kwargs)),
+        ]
     )
