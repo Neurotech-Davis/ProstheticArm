@@ -72,12 +72,27 @@ cd test-implementation/pipeline
 python scripts/test_arduino_gui.py --port MOCK
 
 # With Arduino (upload grasp_controller.ino first, then):
-python scripts/test_arduino_gui.py --port /dev/tty.usbmodem101
+python scripts/test_arduino_gui.py --port /dev/cu.usbmodem1101
 ```
 
 Click the big button to toggle REST ↔ GRASP. The on-board LED should follow;
 servos will follow once you uncomment the PCA9685 lines in the `.ino`.
 ESC or the STOP button quits.
+
+> **⚠️ macOS serial port names vary per USB port.** The suffix (`1101`, `101`,
+> `14101`, `14201`, …) is assigned by macOS based on which physical USB port
+> you plug into, not by the Arduino. If you get
+> `OS error: cannot open port /dev/cu.usbmodemXXXX: No such file or directory`
+> either in the Arduino IDE or in the Python GUI, run:
+>
+> ```bash
+> ls /dev/cu.usbmodem*
+> ```
+>
+> Use whatever it prints as `--port`. Switching USB ports (or rebooting) can
+> change the suffix — always confirm after plugging in. Prefer `/dev/cu.*`
+> over `/dev/tty.*`; the `tty.*` variant blocks on open and is the wrong
+> device class for Arduino programming / pyserial on macOS.
 
 ## Status (first pass)
 

@@ -41,7 +41,7 @@ def run_realtime_loop(
     lsl_stream_name : str
         LSL EEG stream to consume.
     serial_port : str
-        Serial device to command the Arduino with (e.g. /dev/tty.usbmodem101).
+        Serial device to command the Arduino with (e.g. /dev/cu.usbmodem1101).
     """
     raise NotImplementedError(
         "Scaffold. Implement after offline training produces a working model."

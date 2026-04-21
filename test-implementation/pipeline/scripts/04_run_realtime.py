@@ -7,7 +7,7 @@ serial link, and enters the sliding-window inference loop defined in
 Usage:
     conda activate psychopy_env
     python scripts/04_run_realtime.py --model models/<run_id>.joblib \
-        --stream OpenBCI_EEG --port /dev/tty.usbmodem101
+        --stream OpenBCI_EEG --port /dev/cu.usbmodem1101
 """
 
 from __future__ import annotations

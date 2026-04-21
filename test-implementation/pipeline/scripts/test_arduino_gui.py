@@ -12,8 +12,8 @@ Mirrors the PsychoPy conventions in ``reference/simple_bci/task.py``:
 Usage
 -----
     conda activate psychopy_env
-    python scripts/test_arduino_gui.py --port /dev/tty.usbmodem101
-    python scripts/test_arduino_gui.py --port /dev/tty.usbmodem101 --baud 115200
+    python scripts/test_arduino_gui.py --port /dev/cu.usbmodem1101
+    python scripts/test_arduino_gui.py --port /dev/cu.usbmodem1101 --baud 115200
     python scripts/test_arduino_gui.py --port MOCK   # dry-run without real hardware
 
 With ``--port MOCK`` no serial port is opened; the GUI prints what it
@@ -239,7 +239,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--port",
-        help="Serial device (e.g. /dev/tty.usbmodem101). Default: configs/deployment.yaml. "
+        help="Serial device (e.g. /dev/cu.usbmodem1101). Default: configs/deployment.yaml. "
         "Use --port MOCK to dry-run without hardware.",
     )
     parser.add_argument("--baud", type=int, help="Baud rate. Default: configs/deployment.yaml.")

@@ -1,8 +1,10 @@
 # deployment.yaml — Python → Arduino serial bridge.
 
 serial:
-  # Override with the actual /dev/tty.usbmodem* at runtime. macOS default form.
-  port: /dev/tty.usbmodem101
+  # macOS naming: /dev/cu.usbmodem<N> — suffix is assigned per USB port, so it
+  # changes if you plug into a different port. Confirm with `ls /dev/cu.usbmodem*`
+  # and override via the --port CLI flag if the default below is wrong.
+  port: /dev/cu.usbmodem1101
   baud: 115200
   # Seconds to wait after opening port before first write. Arduinos auto-reset
   # on DTR drop (which happens when the serial port is opened) and take

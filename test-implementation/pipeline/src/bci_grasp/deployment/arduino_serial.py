@@ -16,7 +16,7 @@ version — kept as reference, not wired here.
 The ``ArduinoLink`` class is a context manager so the port always closes
 cleanly, even on exception. Usage::
 
-    with ArduinoLink("/dev/tty.usbmodem101") as link:
+    with ArduinoLink("/dev/cu.usbmodem1101") as link:
         link.send("grasp")
         ...
         link.send("rest")
