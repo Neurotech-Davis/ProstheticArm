@@ -1,3 +1,9 @@
+# dataset repo to prevent it from becoming a git submodule
+test-implementation/ds003810/ 
+
+# Mac is running out of storage, not for future
+STORAGE_CLEANUP.md
+
 # Python
 __pycache__/
 *.py[cod]

@@ -7,6 +7,7 @@ Keep this concise. Update when goals, layout, or decisions change.
 
 ## Project goal
 
+
 Build an **offline Motor Imagery BCI** that classifies **right-hand grasp (MI) vs rest** from EEG, then issues a command over serial to an Arduino driving a servo-based prosthetic arm.
 
 Neurotech 2026 project. Three currently-disconnected pieces are being integrated into one pipeline:
@@ -65,7 +66,7 @@ Modified Graz protocol, binary MI vs Rest:
 - t = −3 s: fixation cross (preparation)
 - t = −1 s: audible beep (warning)
 - t =  0 s: task onset, 4 s window. **MI** = red arrow pointing right; **Rest** = no arrow
-- Each run contains **exactly 20 MI + 20 Rest trials (40 total)**, with **trial order randomized** (balanced sequence, shuffled — not independent random draws per trial)
+- Each run contains exactly 20 MI + 20 Rest trials (40 total), with trial order randomized (balanced sequence, shuffled — not independent random draws per trial)
 - Inter-trial interval: random **2.5–4.5 s**
 - Subject's dominant hand is placed **inside a cardboard box** to force kinesthetic (not visual) imagery
 - LSL marker is pushed at **t=0s** (matches "time mark stamps" in dataset)
@@ -74,6 +75,11 @@ Modified Graz protocol, binary MI vs Rest:
 ---
 
 ## Pipeline plan (to be built under `pipeline/`)
+
+**Layout standards.** `pipeline/` blends three conventions:
+- **Cookiecutter Data Science** — overall shape (`src/<package>/`, `configs/`, `scripts/`, `notebooks/`, `tests/`, `models/`, `reports/`).
+- **BIDS-Derivatives** — processed EEG outputs under `derivatives/bci-grasp-vs-rest/sub-XX/eeg/` with a `dataset_description.json` at the derivative root.
+- **MNE-Python / MOABB** — BCI stack conventions (CSP → LDA `sklearn.Pipeline`, LOSO CV via `LeaveOneGroupOut`).
 
 High-level stages and defaults. Flexibility noted — revisit each choice with evidence.
 
@@ -113,6 +119,34 @@ Mirrors `reference/simple_bci/task.py` structure (PsychoPy + LSL marker outlet).
 - **Do not edit** `reference/` or `ds003810/` — both are read-only inputs.
 - **BIDS derivatives:** processed EEG outputs land under `pipeline/derivatives/bci-grasp-vs-rest/sub-XX/eeg/` with `dataset_description.json` at the derivative root.
 - **Dataset path:** read from `test-implementation/ds003810/` directly. Do not copy or re-symlink into `pipeline/`.
+
+## Dataset setup (ds003810 is git-annex managed)
+
+The ds003810 repo ships as a DataLad / git-annex dataset: every `*.edf` is a symlink into `.git/annex/objects/...`, and the actual bytes must be fetched explicitly. The dataset's git repo is kept in place (its nested `.git` is fine) — `test-implementation/ds003810/` is added to the repo's `.gitignore` so the outer git ignores it entirely (no submodule noise).
+
+Required tooling:
+
+- **`git-annex`** — system CLI (Haskell binary). Install via **Homebrew**: `brew install git-annex`. Not available on conda-forge for osx-arm64, so it's the one exception to the "everything into psychopy_env" rule.
+- **`datalad`** — Python wrapper around git-annex. Install into `psychopy_env`: `pip install datalad`.
+
+First-time setup:
+
+```bash
+# one-time, system
+brew install git-annex
+
+# into psychopy_env
+conda activate psychopy_env
+pip install datalad
+
+# fetch data (per-subject to keep downloads small)
+cd test-implementation/ds003810
+datalad get sub-02               # single subject for dev, ~20 MB
+# later, for full LOSO:
+datalad get .
+```
+
+If the EDFs appear as broken symlinks (`ls -la` shows `../.git/annex/objects/...` and `file` reports "broken symbolic link"), the annex objects haven't been fetched yet — run `datalad get`.
 
 ---
 

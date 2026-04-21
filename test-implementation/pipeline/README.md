@@ -39,16 +39,42 @@ pip install -r requirements.txt       # fill in missing deps (mne-bids, sklearn,
 pytest tests/                         # sanity check
 ```
 
+## Training the classifier
+
+Prerequisite: fetch at least one subject of ds003810 (see `../claudecontext.md`
+for `datalad get` setup). With `sub-02` on disk:
+
+```bash
+conda activate psychopy_env
+python scripts/01_preprocess.py --subject 02     # BIDS → derivatives/*_epo.fif
+python scripts/02_train.py                       # CSP → LDA → models/<run_id>.joblib + .json
+python scripts/03_evaluate.py --scheme loso      # LOSO (falls back to k-fold for <2 subjects)
+```
+
+Outputs:
+- `derivatives/bci-grasp-vs-rest/sub-XX/eeg/sub-XX_task-MIvsRest_epo.fif` — preprocessed epochs per subject
+- `models/<run_id>.joblib` + sidecar `.json` (config snapshot, metrics, git SHA)
+- `reports/metrics/<run_id>.json` + `reports/figures/<run_id>_confusion.png`
+
+For full LOSO, `datalad get sub-XX` each remaining subject and rerun `01_preprocess.py`
+(no `--subject` flag → all).
+
 ## Status (first pass)
 
 | Module | Status |
 |---|---|
-| `deployment/protocol.py` + tests | **implemented** (binary serial frame encode/decode + CRC8) |
-| everything else | **stubs** — signatures + docstrings, `NotImplementedError` bodies |
-
-Stubs are filled in incrementally. Start with `scripts/02_train.py` once
-`data/bids_loader.py`, `preprocessing/`, `features/csp.py`, and
-`models/lda_pipeline.py` are implemented.
+| `data/` (BIDS loader + channel select) | **implemented** |
+| `preprocessing/` (filter + epoch) | **implemented** |
+| `artifacts/reject.py` | **implemented** |
+| `features/csp.py` | **implemented** |
+| `models/` (LDA pipeline + save/load) | **implemented** |
+| `evaluation/` (LOSO + k-fold + metrics) | **implemented** |
+| `scripts/01_preprocess.py`, `02_train.py`, `03_evaluate.py` | **implemented** |
+| `deployment/protocol.py` + tests | **implemented** |
+| `deployment/arduino_serial.py` | stub (pyserial wrapper — wire up with hardware) |
+| `arduino/grasp_controller/grasp_controller.ino` | stub state machine (LED blink, servo TODO) |
+| `realtime/` (LSL inlet + sliding inference) | stub (wire up after LOSO validation) |
+| `task/` (PsychoPy stimulus GUI) | stub (for future own-data collection) |
 
 ## Conventions
 
