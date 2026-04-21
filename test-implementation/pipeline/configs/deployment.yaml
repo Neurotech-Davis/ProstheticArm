@@ -4,26 +4,25 @@ serial:
   # Override with the actual /dev/tty.usbmodem* at runtime. macOS default form.
   port: /dev/tty.usbmodem101
   baud: 115200
-  # Seconds to wait after opening port before first write; Arduino resets on
-  # DTR-open and needs ~2 s to boot the sketch.
+  # Seconds to wait after opening port before first write. Arduinos auto-reset
+  # on DTR drop (which happens when the serial port is opened) and take
+  # ~1.5-2 s to re-enter loop(). Writes during that window are lost.
   open_delay_s: 2.0
+  # pyserial write timeout; keeps a stuck port from blocking the event loop.
   write_timeout_s: 0.2
 
 protocol:
-  # Fixed binary frame — matches protocol.py and grasp_controller.ino.
-  #   [SYNC0=0xAA][SYNC1=0x55][CMD:u8][ARG:u8][CRC8]   # 5 bytes
-  sync_bytes: [0xAA, 0x55]
-  frame_len: 5
-  commands:
-    GRASP: 0x01
-    REST: 0x02
-    PING: 0x03
-    CALIBRATE: 0x04
+  # v1 deployment: a single ASCII byte per state change.
+  # Python sends '1' for GRASP, '0' for REST. Arduino ignores anything else
+  # (robust to startup noise, easy to debug with a serial monitor).
+  grasp_byte: "1"
+  rest_byte: "0"
 
 inference:
   # Probability threshold for committing a command. Above → GRASP, below (1 - t)
   # → REST, else hold previous. Keeps the arm from chattering on borderline
-  # predictions.
+  # classifier predictions. Unused by the manual test GUI (the human
+  # button-click IS the threshold).
   decision_threshold: 0.75
   # Minimum dwell time before a command flip is allowed (hysteresis).
   min_dwell_s: 1.0
