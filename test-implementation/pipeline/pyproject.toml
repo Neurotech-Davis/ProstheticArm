@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bci_grasp"
+version = "0.1.0"
+description = "Offline Motor Imagery BCI for right-hand grasp vs rest, targeting Arduino prosthetic arm control."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Ralph D" }]
+license = { text = "MIT" }
+
+# Runtime deps.
+# Pinned loosely — the `psychopy_env` conda env is the source of truth.
+# Anything already in that env does not need to be reinstalled.
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "pyyaml>=6.0",
+    "mne>=1.5",
+    "mne-bids>=0.14",
+    "scikit-learn>=1.3",
+    "pyserial>=3.5",
+    "pylsl>=1.16",
+    "pyxdf>=1.17",
+]
+
+[project.optional-dependencies]
+# PsychoPy lives in the conda env already; pip-installing it is fragile.
+# Listed here only for documentation of the stimulus-GUI dependency.
+stimulus = ["psychopy"]
+dev = ["pytest>=7", "ruff>=0.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

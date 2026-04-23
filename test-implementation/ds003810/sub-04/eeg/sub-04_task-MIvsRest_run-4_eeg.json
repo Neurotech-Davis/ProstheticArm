@@ -1,0 +1,14 @@
+{
+    "InstitutionAddress": " ",
+    "InstitutionName": "PROMAB Lab. IMAL - CONICET. Santa Fe. Argentina.",
+    "InstitutionalDepartmentName": " ",
+    "PowerLineFrequency": 50,
+    "TaskName": "MIvsRestRUN4",
+    "EEGReference": "Left Ear lobe",
+    "EEGChannelCount": 15,
+    "RecordingType": "continuous",
+    "SamplingFrequency": 125,
+    "SoftwareFilters": "n/a"
+
+
+}

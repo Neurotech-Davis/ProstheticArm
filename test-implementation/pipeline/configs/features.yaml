@@ -1,0 +1,22 @@
+# features.yaml — feature extraction choices.
+
+csp:
+  # Common Spatial Patterns. Output features are log-variance of the
+  # top spatial filters. With 6 channels, 4 components is a reasonable
+  # default (2 per class "direction"). Reduce to 2 if overfitting LOSO.
+  n_components: 4
+  reg: null           # mne CSP regularization (null = none; try "ledoit_wolf")
+  log: true           # log-variance of filtered signal (standard for CSP→LDA)
+  cov_est: concat     # "concat" or "epoch"; concat = class covariance
+
+bandpower:
+  # Fallback / comparison features when CSP underperforms.
+  # Per-channel log-power in mu and beta bands.
+  bands:
+    mu: [8.0, 13.0]
+    beta: [13.0, 30.0]
+  log: true
+  # If true, normalize each trial's band power by a pre-cue baseline window
+  # (classical ERD %-change). Requires a baseline epoch — disable for
+  # real-time / single-window inference.
+  erd_normalize: false

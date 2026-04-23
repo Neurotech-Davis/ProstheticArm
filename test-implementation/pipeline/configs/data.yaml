@@ -1,0 +1,51 @@
+# data.yaml — dataset location, subjects/runs, channel subset.
+#
+# Paths are relative to the repo root (ProstheticArm/). Scripts resolve
+# them via `pathlib.Path(__file__).resolve().parents[...]`.
+
+bids_root: test-implementation/ds003810
+
+# All 10 valid subjects in ds003810 (sub-01 and sub-11 absent).
+subjects:
+  - "02"
+  - "03"
+  - "04"
+  - "05"
+  - "06"
+  - "07"
+  - "08"
+  - "09"
+  - "10"
+  - "12"
+
+# Runs to include for MI-vs-Rest training.
+# RUN 0 is physical movement (kinesthetic anchor) — NOT used for the MI classifier.
+# RUN 1-4 are pure motor imagery.
+runs_mi: [1, 2, 3, 4]
+run_physical_anchor: 0
+
+# Event code → class label (from ds003810 task-MIvsRest_events.json).
+# The GDF labels in the raw EDF ("OVTK_GDF_Right", "OVTK_GDF_Tongue") are
+# semantically misleading — trust this mapping, not the GDF names.
+event_id:
+  MI: 7     # class 1 — right-hand grasp motor imagery
+  Rest: 9   # class 0 — idle
+
+# Task-dataset meta (from task-MIvsRest_channels.tsv + run JSONs).
+sampling_rate_hz: 125
+all_channels:
+  [Pz, Cz, T6, T4, F8, P4, C4, F4, Fz, T5, T3, F7, P3, C3, F3]
+
+# 6-channel subset used in training and deployment.
+# Chosen to match the planned OpenBCI Cyton active-electrode montage so the
+# trained model is transferable to the real-time rig:
+#   C3 primary (contralateral motor, where right-hand ERD is strongest)
+#   Cz midline baseline
+#   C4 ipsilateral control
+#   F3 premotor
+#   P3 somatosensory
+#   Pz stability / covariance support
+deployment_channels: [C3, Cz, C4, F3, P3, Pz]
+
+# Powerline frequency (Argentina — see dataset institution).
+powerline_hz: 50

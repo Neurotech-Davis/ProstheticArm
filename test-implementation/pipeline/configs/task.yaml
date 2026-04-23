@@ -1,0 +1,70 @@
+# task.yaml — stimulus GUI paradigm constants (Graz-based, MI vs Rest).
+#
+# Consumed by src/bci_grasp/task/paradigm.py. All timings in seconds
+# unless suffixed.
+
+# ------------------------------------------------------------------
+# MONITOR REFRESH RATE — CRITICAL FOR TIMING.
+# PsychoPy flips frames; ms-accurate timing relies on this matching
+# your monitor exactly. Check with `win.getActualFrameRate()` before
+# trusting the paradigm.
+# ------------------------------------------------------------------
+refresh_rate_hz: 60.0
+
+trial:
+  # t relative to task onset (t=0):
+  t_fixation: -3.0   # fixation cross appears (preparation)
+  t_beep: -1.0       # audible beep (warning cue)
+  t_cue: 0.0         # visual stimulus + LSL marker pushed here
+  t_cue_end: 4.0     # stimulus removed (task window = [0, 4])
+
+  # Inter-trial interval drawn uniformly each trial.
+  iti_min: 2.5
+  iti_max: 4.5
+
+stimuli:
+  # Red right-pointing arrow for MI; blank for Rest.
+  mi_arrow:
+    color: [1.0, -1.0, -1.0]    # PsychoPy RGB in [-1,1]; this is pure red
+    size_px: 200
+    direction: right
+  rest:
+    # No visual stimulus — only fixation stays on.
+    draw_nothing: true
+  fixation:
+    color: [1.0, 1.0, 1.0]
+    size_px: 50
+  beep:
+    freq_hz: 1000
+    duration_s: 0.2
+
+trials_per_run:
+  # Balanced, shuffled (not independent random draws).
+  mi: 20
+  rest: 20
+  # Total = 40 per run. RUN 0 = physical movement, RUN 1-4 = MI.
+
+runs:
+  physical_anchor: 0
+  mi: [1, 2, 3, 4]
+
+lsl:
+  # Marker outlet name — LabRecorder picks this up alongside the EEG stream.
+  marker_stream_name: Task_Markers
+  marker_stream_type: Markers
+  # Label strings pushed at t=0. Keep them ASCII; XDF readers are picky.
+  labels:
+    mi: "MI"
+    rest: "Rest"
+    # Additional control markers (start of run, end, etc.) the backend listens for.
+    run_start: "run_start"
+    run_end: "run_end"
+    die: "die"
+
+# Window config (passed straight into psychopy.visual.Window).
+window:
+  size: [1280, 720]
+  fullscr: false
+  color: [0.0, 0.0, 0.0]
+  units: pix
+  screen: 0

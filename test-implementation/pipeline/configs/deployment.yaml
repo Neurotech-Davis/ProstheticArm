@@ -1,0 +1,30 @@
+# deployment.yaml — Python → Arduino serial bridge.
+
+serial:
+  # macOS naming: /dev/cu.usbmodem<N> — suffix is assigned per USB port, so it
+  # changes if you plug into a different port. Confirm with `ls /dev/cu.usbmodem*`
+  # and override via the --port CLI flag if the default below is wrong.
+  port: /dev/cu.usbmodem1101
+  baud: 115200
+  # Seconds to wait after opening port before first write. Arduinos auto-reset
+  # on DTR drop (which happens when the serial port is opened) and take
+  # ~1.5-2 s to re-enter loop(). Writes during that window are lost.
+  open_delay_s: 2.0
+  # pyserial write timeout; keeps a stuck port from blocking the event loop.
+  write_timeout_s: 0.2
+
+protocol:
+  # v1 deployment: a single ASCII byte per state change.
+  # Python sends '1' for GRASP, '0' for REST. Arduino ignores anything else
+  # (robust to startup noise, easy to debug with a serial monitor).
+  grasp_byte: "1"
+  rest_byte: "0"
+
+inference:
+  # Probability threshold for committing a command. Above → GRASP, below (1 - t)
+  # → REST, else hold previous. Keeps the arm from chattering on borderline
+  # classifier predictions. Unused by the manual test GUI (the human
+  # button-click IS the threshold).
+  decision_threshold: 0.75
+  # Minimum dwell time before a command flip is allowed (hysteresis).
+  min_dwell_s: 1.0
