@@ -4,6 +4,8 @@ test-implementation/ds003810/
 # Mac is running out of storage, not for future
 STORAGE_CLEANUP.md
 
+.DS_Store
+
 # Python
 __pycache__/
 *.py[cod]
