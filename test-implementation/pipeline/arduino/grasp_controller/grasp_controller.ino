@@ -28,7 +28,7 @@
 //
 // Hardware:
 //   PCA9685 16-channel PWM driver @ 50 Hz (standard hobby-servo rate).
-//   Servos wired to channels 0..NUM_SERVOS-1.
+//   Servos wired to channels listed in SERVO_CHANNELS[].
 //   IMPORTANT: drive the PCA9685 V+ rail from a separate 5 V supply (bench
 //   PSU or battery) — 5 servos at stall can pull >2 A, well beyond Arduino
 //   USB limits. The Arduino 5V pin should power only the PCA9685 VCC (logic).
@@ -49,7 +49,11 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 //   600 ≈ 2.5 ms pulse (full clockwise)
 // Step/delay pace matches the reference sketch: 10 ticks per step, 5 ms
 // between steps → ~225 ms for a full MIN↔MAX traversal.
-static const uint8_t  NUM_SERVOS          = 5;
+// Which PCA9685 channels have servos wired. Edit to match your build — the
+// array can be any length, any subset of 0..15, in any order. NUM_SERVOS is
+// computed from the array length so the rest of the code adapts automatically.
+static const uint8_t  SERVO_CHANNELS[]    = {0, 1, 2, 3, 12};
+static const uint8_t  NUM_SERVOS          = sizeof(SERVO_CHANNELS) / sizeof(SERVO_CHANNELS[0]);
 static const uint16_t SERVO_MIN           = 150;   // rest-side extreme
 static const uint16_t SERVO_MAX           = 600;   // grasp-side extreme
 static const uint16_t SERVO_STEP          = 10;    // PWM ticks per iteration
@@ -80,7 +84,7 @@ void setup() {
     // (no sweep) because there's no prior position to interpolate from.
     for (uint8_t i = 0; i < NUM_SERVOS; i++) {
         current_pose[i] = SERVO_MIN;
-        pwm.setPWM(i, 0, current_pose[i]);
+        pwm.setPWM(SERVO_CHANNELS[i], 0, current_pose[i]);
     }
 }
 
@@ -120,12 +124,12 @@ void loop() {
             uint16_t next = current_pose[i] + SERVO_STEP;
             if (next > target) next = target;  // clamp to avoid overshoot
             current_pose[i] = next;
-            pwm.setPWM(i, 0, current_pose[i]);
+            pwm.setPWM(SERVO_CHANNELS[i], 0, current_pose[i]);
             any_moved = true;
         } else if (current_pose[i] > target) {
             uint16_t delta = current_pose[i] - target;
             current_pose[i] -= (delta < SERVO_STEP) ? delta : SERVO_STEP;
-            pwm.setPWM(i, 0, current_pose[i]);
+            pwm.setPWM(SERVO_CHANNELS[i], 0, current_pose[i]);
             any_moved = true;
         }
         // else: already at target — no write, no movement.
